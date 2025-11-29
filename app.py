@@ -226,7 +226,8 @@ def analyze_risks_with_llm(tasks, blocked_tasks, bottlenecks):
                 {"role": "system", "content": "You are a helpful project management assistant. Output valid JSON only."},
                 {"role": "user", "content": prompt}
             ],
-            response_format={"type": "json_object"}
+            response_format={"type": "json_object"},
+            timeout=10.0  # 10 second timeout
         )
         
         content = response.choices[0].message.content
