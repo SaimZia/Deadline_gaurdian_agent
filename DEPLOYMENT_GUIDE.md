@@ -12,8 +12,13 @@ Since this is a **Flask (Python)** application, I recommend these free/cheap pla
   3. Click **New +** -> **Web Service**.
   4. Connect your GitHub repo.
   5. **Build Command**: `pip install -r requirements.txt`
-  6. **Start Command**: `gunicorn app:app` (You need to add `gunicorn` to requirements.txt first!)
-  7. Add Environment Variables (`MONGO_URI`, `OPENROUTER_API_KEY`, etc.) in the dashboard.
+  6. **Start Command**: `gunicorn app:app`
+
+> [!IMPORTANT]
+> **Windows Users**: `gunicorn` **does not work on Windows**.
+> *   **Locally**: Use `python app.py` to run the agent.
+> *   **Deployment**: Render/Railway use Linux, so `gunicorn` will work perfectly there.
+> *   If you *must* run a production server on Windows, use `waitress` instead (`pip install waitress` -> `waitress-serve --port=8001 app:app`).
 
 ### **Option B: Railway**
 - **Why**: Very stable, good for MongoDB connectivity.
