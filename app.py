@@ -271,7 +271,7 @@ def handle_request():
 
     try:
         # Fetch tasks from MongoDB
-        if collection:
+        if collection is not None:
             tasks = list(collection.find({}))
         else:
             tasks = [] # Fallback if DB not connected
