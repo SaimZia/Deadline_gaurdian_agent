@@ -130,11 +130,16 @@ def build_dependency_graph(tasks):
         depends_on = task.get('depends_on')
         
         if depends_on:
-            # Handle comma-separated dependencies if string
-            deps = [d.strip() for d in depends_on.split(',')] if isinstance(depends_on, str) else [depends_on]
+            # Handle different dependency formats
+            if isinstance(depends_on, str):
+                deps = [d.strip() for d in depends_on.split(',') if d.strip()]
+            elif isinstance(depends_on, list):
+                deps = [str(d).strip() for d in depends_on if d]
+            else:
+                deps = [str(depends_on).strip()] if depends_on else []
             
             for dep_id in deps:
-                if dep_id in graph:
+                if dep_id and dep_id in graph:
                     graph[dep_id].append(t_id)
     
     return graph, status_map, risk_map
@@ -156,12 +161,20 @@ def analyze_cascading_risks(tasks):
         depends_on = task.get('depends_on')
         
         if depends_on:
-            deps = [d.strip() for d in depends_on.split(',')] if isinstance(depends_on, str) else [depends_on]
+            # Handle different dependency formats
+            if isinstance(depends_on, str):
+                deps = [d.strip() for d in depends_on.split(',') if d.strip()]
+            elif isinstance(depends_on, list):
+                deps = [str(d).strip() for d in depends_on if d]
+            else:
+                deps = [str(depends_on).strip()] if depends_on else []
+            
             for dep_id in deps:
-                # If dependency is CRITICAL, OVERDUE, or HIGH risk, the dependent task is BLOCKED
-                dep_risk = risk_map.get(dep_id)
-                if dep_risk in ["CRITICAL", "HIGH"]:
-                    blocked_tasks.add(t_id)
+                if dep_id:
+                    # If dependency is CRITICAL, OVERDUE, or HIGH risk, the dependent task is BLOCKED
+                    dep_risk = risk_map.get(dep_id)
+                    if dep_risk in ["CRITICAL", "HIGH"]:
+                        blocked_tasks.add(t_id)
     
     # Identify bottlenecks (tasks blocking > 1 other task)
     for t_id, dependents in graph.items():
