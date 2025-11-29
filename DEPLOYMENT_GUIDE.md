@@ -31,6 +31,8 @@ Since this is a **Flask (Python)** application, I recommend these free/cheap pla
 Once deployed, your **Base URL** will look like:
 `https://deadline-guardian.onrender.com` (Example)
 
+**Live Deployment**: `https://deadlinegaurdianagent-production.up.railway.app`
+
 | Method | Endpoint | Description |
 |--------|----------|-------------|
 | `GET`  | `/`      | Root check (Returns "Agent is running") |

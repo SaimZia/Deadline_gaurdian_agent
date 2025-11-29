@@ -2,6 +2,15 @@
 
 An intelligent, AI-powered agent that monitors project deadlines, identifies risks, and provides strategic recommendations. It goes beyond simple date checking by understanding **dependencies**, **bottlenecks**, and **contextual urgency**.
 
+## 🌐 Live Deployment
+
+**Base URL**: `https://deadlinegaurdianagent-production.up.railway.app`
+
+**Endpoints**:
+- **Root**: `https://deadlinegaurdianagent-production.up.railway.app/`
+- **Health Check**: `https://deadlinegaurdianagent-production.up.railway.app/health`
+- **Main Handler**: `https://deadlinegaurdianagent-production.up.railway.app/handle`
+
 ## ✨ Features
 
 - **🧠 AI-Powered Analysis**: Uses **Google Gemini Flash 2.0** (via OpenRouter) to understand task descriptions and urgency.

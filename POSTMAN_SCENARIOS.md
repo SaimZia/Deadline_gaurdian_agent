@@ -10,8 +10,10 @@ Ensure your MongoDB has the data you shared.
 
 ## 2. The Request
 **Method**: `POST`
-**URL**: `http://localhost:8001/handle` (or your deployed URL)
+**URL**: `https://deadlinegaurdianagent-production.up.railway.app/handle`
 **Headers**: `Content-Type: application/json`
+
+> **Note**: You can also test locally using `http://localhost:8001/handle`
 
 **Body (JSON)**:
 ```json
