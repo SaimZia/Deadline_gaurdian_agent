@@ -66,3 +66,85 @@ The agent will analyze your specific tasks. Here is what the JSON output will lo
 
 4.  **AI Insights**:
     *   The AI will read "Meeting with CTO at sharp 9 PM" and likely scream that you are late! 🚨
+
+---
+
+## 5. 🧪 Additional Test Cases
+
+### **Test Case 2: Health Check**
+**URL**: `https://deadlinegaurdianagent-production.up.railway.app/health`
+**Method**: `GET`
+**Expected Response**:
+```json
+{
+  "status": "healthy",
+  "agent": "deadline_guardian_agent",
+  "timestamp": "2025-11-29T22:00:00",
+  "mongodb": "connected",
+  "ai_enabled": true
+}
+```
+
+### **Test Case 3: Invalid Intent (Error Handling)**
+**URL**: `https://deadlinegaurdianagent-production.up.railway.app/handle`
+**Method**: `POST`
+**Body**:
+```json
+{
+  "request_id": "test-error-01",
+  "agent_name": "deadline_guardian_agent",
+  "intent": "invalid.intent",
+  "input": { "text": "test" },
+  "context": { "user_id": "tester" }
+}
+```
+**Expected Response**: `400 Bad Request`
+```json
+{
+  "status": "error",
+  "error": {
+    "type": "invalid_intent",
+    "message": "Unsupported intent: invalid.intent. Only 'deadline.monitor' is supported."
+  }
+}
+```
+
+### **Test Case 4: Missing Request Body**
+**URL**: `https://deadlinegaurdianagent-production.up.railway.app/handle`
+**Method**: `POST`
+**Body**: (Leave empty or send `{}`)
+**Expected Response**: `400 Bad Request`
+```json
+{
+  "status": "error",
+  "error": {
+    "type": "invalid_request",
+    "message": "Missing request body"
+  }
+}
+```
+
+### **Test Case 5: Root Endpoint Check**
+**URL**: `https://deadlinegaurdianagent-production.up.railway.app/`
+**Method**: `GET`
+**Expected Response**:
+```json
+{
+  "message": "Deadline Guardian Agent is running 🚀",
+  "endpoints": {
+    "health": "/health",
+    "handle": "/handle"
+  },
+  "status": "online"
+}
+```
+
+---
+
+## 6. 📋 Postman Collection Setup
+
+**Quick Setup**:
+1. Create a new Collection in Postman called "Deadline Guardian Agent"
+2. Add these 5 requests to the collection
+3. Set a Collection Variable: `base_url` = `https://deadlinegaurdianagent-production.up.railway.app`
+4. Use `{{base_url}}/handle` in your requests for easy switching between local/production
