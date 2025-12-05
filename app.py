@@ -77,8 +77,19 @@ def calculate_risk_level(deadline_str, status):
     if status.lower() in ["done", "completed"]:
         return "COMPLETED", 0
 
+    if not deadline_str:
+        return "UNKNOWN", 0
+
     try:
-        deadline = datetime.strptime(deadline_str, "%Y-%m-%d")
+        # Try parsing with time first, then without
+        try:
+            deadline = datetime.strptime(deadline_str, "%Y-%m-%dT%H:%M:%S")
+        except ValueError:
+            try:
+                deadline = datetime.strptime(deadline_str, "%Y-%m-%d %H:%M:%S")
+            except ValueError:
+                deadline = datetime.strptime(deadline_str, "%Y-%m-%d")
+        
         now = datetime.now()
         days_remaining = (deadline - now).days
         
@@ -212,22 +223,23 @@ def analyze_risks_with_llm(tasks, blocked_tasks, bottlenecks):
     prompt = f"""
     You are a Senior Project Manager analyzing complex project risks.
     
-    Analyze the following tasks, paying special attention to DEPENDENCIES and BOTTLENECKS.
+    Analyze the following tasks, paying special attention to DEPENDENCIES, BOTTLENECKS, and UPCOMING DEADLINES.
     
     Key Analysis Points:
     1. **Cascading Risks**: Identify tasks blocked by high-risk dependencies.
     2. **Bottlenecks**: Flag tasks that are holding up multiple other tasks.
-    3. **Strategic Prioritization**: Recommend focusing on clearing bottlenecks first.
+    3. **Upcoming Deadlines**: Note tasks with approaching deadlines that need attention.
+    4. **Strategic Prioritization**: Recommend focusing on clearing bottlenecks first, then addressing upcoming deadlines proactively.
     
     Tasks:
     {tasks_text}
     
     Return a JSON object with this structure:
     {{
-        "risk_analysis": "Concise summary of risks, highlighting bottlenecks and blocked chains.",
+        "risk_analysis": "Concise summary of risks, highlighting bottlenecks, blocked chains, and upcoming deadlines that need attention.",
         "strategic_recommendations": [
             "Actionable recommendation 1 (focus on bottlenecks)",
-            "Actionable recommendation 2"
+            "Actionable recommendation 2 (address upcoming deadlines)"
         ]
     }}
     """
@@ -325,10 +337,14 @@ def handle_request():
 
         # 4. Construct Response
         
+        # Count upcoming tasks
+        upcoming_count = len([t for t in analyzed_tasks if t['risk'] in ['LOW', 'MEDIUM'] and t['days_remaining'] > 0])
+        
         # Build text report
         report_lines = ["📊 **Advanced Deadline Report**\n"]
         report_lines.append(f"Total Tasks: {len(tasks)}")
         report_lines.append(f"At Risk: {risk_counts['CRITICAL'] + risk_counts['HIGH'] + risk_counts['BLOCKED']}")
+        report_lines.append(f"Upcoming: {upcoming_count}")
         report_lines.append(f"Bottlenecks: {len(bottlenecks)}")
         report_lines.append(f"Blocked: {len(blocked_tasks)}\n")
         
@@ -358,6 +374,18 @@ def handle_request():
                 if t['risk'] == 'HIGH':
                     bottleneck_tag = " [BOTTLENECK]" if t['is_bottleneck'] else ""
                     report_lines.append(f"  • [{t['id']}] {t['name']} - {t['time_text']}{bottleneck_tag}")
+            report_lines.append("")
+        
+        # List Upcoming deadlines (LOW and MEDIUM risk tasks with future deadlines)
+        upcoming_tasks = [t for t in analyzed_tasks if t['risk'] in ['LOW', 'MEDIUM'] and t['days_remaining'] > 0]
+        if upcoming_tasks:
+            # Sort by deadline (ascending - earliest first)
+            upcoming_tasks.sort(key=lambda x: x['days_remaining'])
+            report_lines.append(f"📅 **UPCOMING ({len(upcoming_tasks)})**:")
+            for t in upcoming_tasks:
+                bottleneck_tag = " [BOTTLENECK]" if t['is_bottleneck'] else ""
+                deadline_date = t.get('deadline', 'N/A')
+                report_lines.append(f"  • [{t['id']}] {t['name']} - Due in {t['time_text']} (Deadline: {deadline_date}){bottleneck_tag}")
             report_lines.append("")
             
         # Add AI Recommendations if available
